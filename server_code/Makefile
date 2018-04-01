@@ -1,0 +1,11 @@
+SHELL = /bin/bash
+CC = g++
+CFLAGS = -std=c++14 -c
+
+make_server: main.o init.o ../Header.h
+
+%.o: %.cpp 
+	$(CC) $(CFLAGS) -o $@ $<
+
+clean:
+	rm *.o

@@ -1,29 +1,30 @@
-#include "../Header.h"
+#include "./server.h"
+
+map<int, Client> connections;
 
 int main(int argc, const char * argv[]) {
     
-    int sockfd;
-    Socket(sockfd);
+    int sockfd, maxfd;
+    struct sockaddr_in servAddr, cliAddr;
     
-    struct sockaddr_in servAddr;
-    bzero(&servAddr, sizeof(servAddr));
+    start_server(sockfd, servAddr, argc, argv);
     
-    servAddr.sin_family = AF_INET;
+    fd_set readSet;
     
-    if(argc > 2)
-        inet_pton(AF_INET, argv[2], &(servAddr.sin_addr));
-    else
-        servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    
-    servAddr.sin_port = htons(argc > 1 ? atoi(argv[1]) : PORT);
-    
-    Bind(sockfd, servAddr);
-    
-    Listen(sockfd, BACKLOG);
-    
-    cout << setw(atoi(getenv("COLUMNS"))/2 - 4) << green << bold << "SERVER ON" << regular << setw(0) << endl;
-    cout << "IP: " << inet_ntoa(servAddr.sin_addr) << "\t";
-    cout << "Port: " << ntohs(servAddr.sin_port) << endl;
-    
+    while(1) {
+        
+        prepare_readFd(readSet, sockfd);
+        getMaxFd(sockfd, maxfd);
+        
+        if(select(maxfd, &readSet, NULL, NULL, NULL) < 0)
+            print_error("Select Error");
+        
+        if(FD_ISSET(sockfd, &readSet))
+            new_connection();
+        
+        for(auto sock : connections)
+            if(FD_ISSET(sock.first, &readSet))
+                handle_request(cliAddr);
+    }
     return 0;
 }

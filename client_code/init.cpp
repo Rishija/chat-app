@@ -2,7 +2,7 @@
 
 void Connect(int &sockfd, sockaddr_in &servAddr) {
     
-    cout << "Enterted connect()" << endl;
+    // cout << "Enterted connect()" << endl;
     if(connect(sockfd, (sockaddr*)&servAddr, sizeof(servAddr)) < 0)
         print_error("Connect Error");
 }

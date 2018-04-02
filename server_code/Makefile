@@ -1,11 +1,12 @@
 SHELL = /bin/bash
 CC = g++
 CFLAGS = -std=c++14 -c
+DEP = server.h ../Header.h
 
-make_server: main.o init.o ../Header.h
+make_server: main.o init.o helpers.o $(DEP)
 
-%.o: %.cpp ../Header.h
+%.o: %.cpp $(DEP)
 	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	rm *.o
+	rm *.o *.out

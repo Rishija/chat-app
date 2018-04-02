@@ -8,10 +8,8 @@ CLIENT_OBJECTS := $(CLIENT_CODES:.cpp=.o)
 
 all: 
 	cd server_code; make
-	cd ..
 	$(CC) $(CFLAGS) $(SERVER_OBJECTS) -o server
 	cd client_code; make
-	cd ..
 	$(CC) $(CFLAGS) $(CLIENT_OBJECTS) -o client
 
 clean:

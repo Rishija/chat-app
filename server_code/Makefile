@@ -4,7 +4,7 @@ CFLAGS = -std=c++14 -c
 
 make_server: main.o init.o ../Header.h
 
-%.o: %.cpp 
+%.o: %.cpp ../Header.h
 	$(CC) $(CFLAGS) -o $@ $<
 
 clean:

@@ -2,6 +2,7 @@
 #define Header_h
 
 #include <iostream>
+#include <cstring>
 #include <cstdlib>
 #include <iomanip>
 #include <sys/socket.h>
@@ -22,9 +23,8 @@ void Socket(int &sockfd);
 void Bind(int &sockfd, sockaddr_in &servAddr);
 void Listen(int sockfd, int backlog);
 void Connect(int &sockfd, sockaddr_in &servAddr);
-void connect_to_server(int &sockfd, sockaddr_in &servAddr, int argc, const char * argv[]);
 
-void print_error(string err) {
+inline void print_error(string err) {
     
     if(err != "")
         cout << red << err << regular << endl;
@@ -35,7 +35,7 @@ void print_error(string err) {
     }
 }
 
-void Socket(int &sockfd) {
+inline void Socket(int &sockfd) {
     
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     sockfd < 0 ? print_error("Socket Error") : print_error();

@@ -14,9 +14,9 @@ void Listen(int sockfd, int backlog) {
 
 
 void start_server(int &sockfd, sockaddr_in &servAddr, int argc, const char * argv[]) {
-
-	Socket(sockfd);
-	bzero(&servAddr, sizeof(servAddr));
+    
+    Socket(sockfd);
+    bzero(&servAddr, sizeof(servAddr));
     
     servAddr.sin_family = AF_INET;
     

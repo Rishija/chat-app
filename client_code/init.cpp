@@ -1,4 +1,4 @@
-#include "../Header.h"
+#include "client.h"
 
 void Connect(int &sockfd, sockaddr_in &servAddr) {
     

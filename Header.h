@@ -11,6 +11,7 @@
 #include <cerrno>
 #include <map>
 #include <sys/select.h>
+#include <unistd.h>
 using namespace std;
 
 #define PORT 5555
@@ -20,20 +21,18 @@ using namespace std;
 #define bold "\33[1m"
 #define regular "\33[0m"
 
-void print_error(string err = "");
+void print_error(string err = "", bool shouldExit = true);
 void Socket(int &sockfd);
-void Bind(int &sockfd, sockaddr_in &servAddr);
-void Listen(int sockfd, int backlog);
-void Connect(int &sockfd, sockaddr_in &servAddr);
 
-inline void print_error(string err) {
+inline void print_error(string err, bool shouldExit) {
     
     if(err != "")
-        cout << red << err << regular << endl;
+        cout << red << err << regular << " -> ";
     
     if(errno){
         cout << red << strerror(errno) << regular << endl;
-        exit(errno);
+        if(shouldExit)
+            exit(errno);
     }
 }
 

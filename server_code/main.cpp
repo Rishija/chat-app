@@ -3,7 +3,7 @@
 int main(int argc, const char * argv[]) {
 
     int sockfd, maxfd;
-    struct sockaddr_in servAddr, cliAddr;
+    struct sockaddr_in servAddr;
 
     start_server(sockfd, servAddr, argc, argv);
 
@@ -21,12 +21,12 @@ int main(int argc, const char * argv[]) {
             print_error("Select Error");
 
         if(FD_ISSET(sockfd, &readSet))
-            new_connection();
+            new_connection(sockfd);
 
-        // open `connection` file and compare
-        // for(auto sock : connections)
-        //     if(FD_ISSET(sock.first, &readSet))
-        //         handle_request(cliAddr);
+//        for(auto sock : connections)
+//            if(FD_ISSET(sock.first, &readSet))
+//                handle_request(cliAddr);
     }
     return 0;
 }
+

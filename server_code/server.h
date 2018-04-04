@@ -20,12 +20,15 @@ public:
     char chatroom[20];
 };
 
+void Bind(int &sockfd, sockaddr_in &servAddr);
+void Listen(int sockfd, int backlog);
 void start_server(int &sockfd, sockaddr_in &servAddr, int argc, const char * argv[]);
 void create_connection_file(int listenFD, sockaddr_in &servAddr);
 void prepare_readFd(fd_set &readSet, int sockfd);
 void getMaxFd(int &maxfd);
-void new_connection();
+void new_connection(int sockfd);
 void handle_request(sockaddr_in cliAddr);
+bool add_client(Client &obj);
 
 
 #endif /* Server_h */

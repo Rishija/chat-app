@@ -76,42 +76,25 @@ bool add_client(Client &clientObj) {
     return true;
 }
 
-void new_connection(int listenFD) {
+void remove_client(int clientFD) {
     
-    sockaddr_in cliAddr;
-    socklen_t len = sizeof(cliAddr);
-    int conn = accept(listenFD, (sockaddr*)&cliAddr, &len);
+    fstream fp;
+    fp.open(CONNECTION, ios::in | ios::out | ios::binary);
     
-    if(conn < 0)
-        print_error("New connection - Accept() Error", false);
-    else {
-        cout << "\n" << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Connected\n";
-        if(fork() == 0) {
-            close(listenFD);
-            // add client to `connections` file
-            Client clientObj(conn, cliAddr.sin_addr.s_addr, ntohs(cliAddr.sin_port));
-            if(add_client(clientObj))
-                cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Added\n";
-            else {
-                cout << "Client\t"
-                << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << endl;
-                close(conn);
-                print_error("Connection closed. Add client to file Error", false);
-            }
-            exit(0);
-        }
-    }
+    Client readObj, nullObj;
+    fp.read((char*)&readObj, sizeof(readObj));
+    while(readObj.sockfd != clientFD)
+        fp.read((char*)&readObj, sizeof(readObj));
+    
+    fp.seekp((long long int)fp.tellp() - sizeof(readObj), ios::beg);
+    fp.write((char*)&nullObj, sizeof(nullObj));
+    fp.close();
 }
 
-void handle_request(sockaddr_in cliAddr) {
+
+void send_error_msg(int clientFD, string msg) {
     
-    /*
-     1. Get request
-     if successful:
-        2. Process
-        3. Respond
-     else
-        2. Close connection
-        3. Remove from `connection`
-     */
+    string newMsg = red_bold + msg + regular;
+    if(send(clientFD, (char*)&newMsg, sizeof(newMsg), MSG_DONTWAIT) < 0)
+        print_error("send_error_msg to client Error");
 }

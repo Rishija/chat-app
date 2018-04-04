@@ -23,7 +23,10 @@ void handle_incoming_msg(int sockfd) {
     string msg;
     int received = recv(sockfd, (char*)&msg, MAX, 0);
     
-    if(received <= 0) {
+    if(received < 0) {
+        print_error("\rCan't read from server");
+    }
+    if(received == 0) {
         print_error("\rConnection Closed From Server", false);
         exit(0);
     }
@@ -52,8 +55,9 @@ void send_msg(int sockfd) {
     
     string input = pending.front();
     pending.pop();
+    cout << "\nsending to server: " <<input<<endl;
     
-    if(send(sockfd, (char*)&input, input.size(), flags) < 0)
+    if(send(sockfd, (char*)&input, input.size(), MSG_DONTWAIT) < 0)
         print_error("\rMessage not delivered", false);
 
     else if(input == "\\logout")

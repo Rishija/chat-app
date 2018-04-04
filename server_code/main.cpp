@@ -22,11 +22,8 @@ int main(int argc, const char * argv[]) {
 
         if(FD_ISSET(sockfd, &readSet))
             new_connection(sockfd);
-
-//        for(auto sock : connections)
-//            if(FD_ISSET(sock.first, &readSet))
-//                handle_request(cliAddr);
+        
+        handle_request_from_client(sockfd, readSet);
     }
     return 0;
 }
-

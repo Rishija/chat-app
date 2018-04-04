@@ -2,7 +2,6 @@
 
 queue<string> pending;
 State state = LOGGED_OUT;
-int flags = 0 | MSG_DONTWAIT;
 
 int main(int argc, const char * argv[]) {
     
@@ -32,6 +31,7 @@ int main(int argc, const char * argv[]) {
         if(FD_ISSET(STDIN_FILENO, &readSet)) {
             getline(cin, input);
             pending.push(input);
+            cout << "\n Preapred to send: " << input << "---\n\n\n";
             prompt();
         }
         

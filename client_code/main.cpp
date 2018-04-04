@@ -1,6 +1,8 @@
 #include "client.h"
 
+queue<string> pending;
 State state = LOGGED_OUT;
+int flags = 0 | MSG_DONTWAIT;
 
 int main(int argc, const char * argv[]) {
     
@@ -10,28 +12,32 @@ int main(int argc, const char * argv[]) {
 
     int maxfd = sockfd + 1;
     string input;
-    State state = LOGGED_OUT;
     fd_set readSet, writeSet;
 
     prompt();
 
     while(true) {
-
-    	prepare_fd(readSet, writeSet, sockfd);
-
-    	if(select(maxfd, &readSet, &writeSet, NULL, NULL) < 0)
-    		print_error("Select Error");
-
-    	if(FD_ISSET(sockfd, &readSet)) {
-    		handle_incoming_msg();
-	    	prompt();
-    	}
-
-    	if(FD_ISSET(STDIN_FILENO, &readSet)) {
-    		getline(cin, input);
-    		send_msg();
-    		prompt();
-    	}
+        
+        prepare_fd(readSet, writeSet, sockfd);
+        
+        if(select(maxfd, &readSet, &writeSet, NULL, NULL) < 0)
+            print_error("Select Error");
+        
+        if(FD_ISSET(sockfd, &readSet)) {
+            cout<<"\nIncoming from server\n";
+            handle_incoming_msg(sockfd);
+            prompt();
+        }
+        
+        if(FD_ISSET(STDIN_FILENO, &readSet)) {
+            getline(cin, input);
+            pending.push(input);
+            prompt();
+        }
+        
+        if(FD_ISSET(sockfd, &writeSet)) {
+            send_msg(sockfd);
+        }
     }
     return 0;
 }

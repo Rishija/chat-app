@@ -2,6 +2,10 @@
 
 void Bind(int &sockfd, sockaddr_in &servAddr) {
     
+    const int temp = 1;
+    if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &temp, sizeof(int)) < 0)
+        print_error("Set sock option Error");
+    
     if(::bind(sockfd, (sockaddr*)&servAddr, sizeof(servAddr)) < 0)
         print_error("Bind Error");
 }

@@ -16,6 +16,7 @@ using namespace std;
 
 #define PORT 5555
 #define BACKLOG 20
+#define MAX 2048
 #define red "\33[91m"
 #define green "\33[92m"
 #define bold "\33[1m"
@@ -27,10 +28,10 @@ void Socket(int &sockfd);
 inline void print_error(string err, bool shouldExit) {
     
     if(err != "")
-        cout << red << err << regular << " -> ";
-    
+        cout << red << err << regular;
+
     if(errno){
-        cout << red << strerror(errno) << regular << endl;
+        cout << " -> " << red << strerror(errno) << regular << endl;
         if(shouldExit)
             exit(errno);
     }

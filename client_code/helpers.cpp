@@ -37,17 +37,37 @@ void handle_incoming_msg(int sockfd) {
         exit(0);
     }
     else {
-        if(!strcmp(msg, "logged in") || !strcmp(msg, "signed up")) {
-            state = LOGGED_IN;
-            cout << green << bold << "\rSuccessful\n" << regular;
+        if(state == WAITING_FOR_LOGIN_RESPONSE) {
+            if(!strcmp(msg, "logged_in")) {
+                state = LOGGED_IN;
+                cout << green << bold << "\rLogged in\n" << regular;
+            }
+            else if(!strcmp(msg, "mismatch")) {
+                state = LOGGED_OUT;
+                print_error("\rUsername and password doesn't match", false);
+            }
         }
-        else if(!strcmp(msg, "username taken")) {
-            state = LOGGED_OUT;
-            print_error("\rUsername already taken", false);
+        else if(state == WAITING_FOR_SIGNUP_RESPONSE) {
+            if(!strcmp(msg, "signed_up")) {
+                state = LOGGED_IN;
+                cout << green << bold << "\rSigned up and logged in\n" << regular;
+            }
+            else if(!strcmp(msg, "username_taken")) {
+                state = LOGGED_OUT;
+                print_error("\rUsername already taken", false);
+            }
         }
-        else if(!strcmp(msg, "mismatch")) {
-            state = LOGGED_OUT;
-            print_error("\rUsername and password doesn't match", false);
+        else if(state == WAITING_FOR_LOGOUT_RESPONSE) {
+            if(!strcmp(msg, "logged_out")) {
+                state = LOGGED_OUT;
+                cout << green << bold << "\rLogged out\n" << regular;
+            }
+            else if(!strcmp(msg, "cant_logout")) {
+                state = LOGGED_IN;
+                print_error("\rCant't Log out, Try again later", false);
+            }
+            else
+                cout << msg;
         }
         else
             cout << msg;
@@ -64,27 +84,18 @@ void send_msg(int sockfd) {
     string input1 = input.message;
     // cout << "\nsending to server: " <<input.message<<endl;
 
-    int sendStatus = send(sockfd, input.message, input1.size() + 1, MSG_DONTWAIT);
-    if(sendStatus < 0) {
-        cout<<"\nerr\n";
-        if(sendStatus == EMSGSIZE)
-            print_error("\rMessage size too large", false);
-        else if(sendStatus == EAGAIN || sendStatus == EWOULDBLOCK)
-            print_error("\rTry after some time", false);
-        else {
-            errno = sendStatus;
-            print_error("\rSend message Error");
-        }
-    }
+    if(send_msg(sockfd, input.message, input1.size() + 1)) {
 
-    else if(input1 == "\\logout")
-        state = LOGGED_OUT;
-    
-    else if(input1.substr(0, 6) == "\\login") {
-        state = WAITING_FOR_LOGIN_RESPONSE;
-    }
-    else if(input1.substr(0, 7) == "\\signup") {
-        state = WAITING_FOR_SIGNUP_RESPONSE;
+        if(input1 == "\\logout") {
+            state = WAITING_FOR_LOGOUT_RESPONSE;
+        }
+
+        else if(input1.substr(0, 6) == "\\login") {
+            state = WAITING_FOR_LOGIN_RESPONSE;
+        }
+        else if(input1.substr(0, 7) == "\\signup") {
+            state = WAITING_FOR_SIGNUP_RESPONSE;
+        }
     }
     // cout<<"\nsent\n";
 }

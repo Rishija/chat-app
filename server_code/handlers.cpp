@@ -25,8 +25,7 @@ void new_connection(int listenFD, int &recentConn) {
                 print_error("Connection closed. Add client to file Error", false);
             }
 
-            if(send(conn, helpMsg, sizeof(helpMsg), MSG_DONTWAIT) < 0)
-                print_error("Couldn't send to client", false);
+            send_msg(conn, helpMsg, helpMsgSize);
             exit(0);
         }
     }

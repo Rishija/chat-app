@@ -5,6 +5,7 @@
 #include <fstream>
 #define CONNECTION "connection.bin"
 #define red_bold "\33[91m\33[1m"
+#define helpMsgSize 352
 
 struct Client {
 public:

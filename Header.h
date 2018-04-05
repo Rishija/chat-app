@@ -22,7 +22,11 @@ using namespace std;
 #define bold "\33[1m"
 #define regular "\33[0m"
 
-enum State {LOGGED_OUT = 0, LOGGED_IN, WAITING_FOR_LOGIN_RESPONSE, WAITING_FOR_SIGNUP_RESPONSE};
+enum State {LOGGED_OUT = 0,
+    LOGGED_IN,
+    WAITING_FOR_LOGIN_RESPONSE,
+    WAITING_FOR_SIGNUP_RESPONSE,
+    WAITING_FOR_LOGOUT_RESPONSE };
 
 struct Message {
     char message[MAX];
@@ -30,6 +34,7 @@ struct Message {
 
 void print_error(string err = "", bool shouldExit = true);
 void Socket(int &sockfd);
+bool send_msg(int clientFd, const char *msg, const size_t size);
 
 inline void print_error(string err, bool shouldExit) {
     
@@ -47,6 +52,27 @@ inline void Socket(int &sockfd) {
     
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     sockfd < 0 ? print_error("Socket Error") : print_error();
+}
+
+inline bool send_msg(int sockfd, const char *msg, const size_t size) {
+
+    int sendStatus = send(sockfd, msg, size, MSG_DONTWAIT);
+    if(sendStatus < 0) {
+        cout<<"\nerr\n";
+        if(sendStatus == EMSGSIZE) {
+            print_error("\rMessage size too large", false);
+            return false;
+        }
+        else if(sendStatus == EAGAIN || sendStatus == EWOULDBLOCK) {
+            print_error("\rTry after some time", false);
+            return false;
+        }
+        else {
+            errno = sendStatus;
+            print_error("\rSend message Error");
+        }
+    }
+    return true;
 }
 
 #endif /* Header_h */

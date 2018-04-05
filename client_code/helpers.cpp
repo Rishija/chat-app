@@ -25,7 +25,7 @@ void handle_incoming_msg(int sockfd) {
     
     if(recvStatus < 0) {
         if(recvStatus == EAGAIN || recvStatus == EWOULDBLOCK)
-            print_error("\rTry after some time", false);
+            print_error("\rTry receiving after some time", false);
         else {
             errno = recvStatus;
             print_error("\rCan't read from server");

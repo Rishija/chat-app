@@ -44,13 +44,14 @@ void prepare_readFd(fd_set &readSet, int sockfd) {
         print_error("Prepare_readFD Error");
     
     Client obj;
-    int size = get_file_size();
+    size_t size = get_file_size();
     
-    while((int)fp.tellg() < size) {
+    while((size_t)fp.tellg() < size) {
         fp.read((char*)&obj, sizeof(obj));
         // cout<<"FD_SET for : ";
         // print_obj(obj);
-        FD_SET(obj.sockfd, &readSet);
+        if(obj.sockfd != -1)
+            FD_SET(obj.sockfd, &readSet);
     }
     
     fp.close();
@@ -85,7 +86,7 @@ bool add_client(Client &clientObj) {
     // print_obj(clientObj);
     // cout <<"\nData in file..\n";
     
-    int size = get_file_size();
+    size_t size = get_file_size();
     
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::out | ios::binary);
@@ -99,17 +100,17 @@ bool add_client(Client &clientObj) {
         // print_obj(readObj);
     }
     
-    if((size_t)fp.tellg() == size) {
-        fp.close();
-        fp.open(CONNECTION, ios::app | ios::binary);
+    if(readObj.sockfd < 0) {
+        fp.seekp((size_t)fp.tellg() - sizeof(readObj), ios::beg);
         fp.write((char*)&clientObj, sizeof(clientObj));
-        // cout << "\n---Wrote at end---\n";
+        // cout << "\n---Wrote in mid---\n";
         fp.close();
     }
     else {
-        fp.seekp((long long int)fp.tellg() - sizeof(readObj), ios::beg);
+        fp.close();
+        fp.open(CONNECTION, ios::app | ios::binary);
         fp.write((char*)&clientObj, sizeof(clientObj));
-        // cout << "\n---Wrote in mid---\n";
+         // cout << "\n---Wrote at end---\n";
         fp.close();
     }
     // return true;
@@ -132,9 +133,23 @@ bool add_client(Client &clientObj) {
 }
 
 
+
 void remove_client(int clientFD) {
     
-    fstream fp;
+    // cout <<"In remove client, removing client with fd: "<<clientFD<<endl;
+    // cout <<"\n\nBefore deleting..\n";
+    // Client newobj;
+    // fstream fp;
+    // fp.open(CONNECTION, ios::in | ios::binary);
+    // size_t size = get_file_size();
+    // while((size_t)fp.tellg() < size) {
+    //     fp.read((char*)&newobj, sizeof(newobj));
+    //     print_obj(newobj);
+    // }
+    // fp.close();
+    
+    
+   fstream fp;
     fp.open(CONNECTION, ios::in | ios::out | ios::binary);
     
     Client readObj, nullObj;
@@ -142,9 +157,20 @@ void remove_client(int clientFD) {
     while(readObj.sockfd != clientFD)
         fp.read((char*)&readObj, sizeof(readObj));
     
-    fp.seekp((long long int)fp.tellp() - sizeof(readObj), ios::beg);
+    fp.seekp((size_t)fp.tellp() - sizeof(readObj), ios::beg);
     fp.write((char*)&nullObj, sizeof(nullObj));
     fp.close();
+    
+    
+    
+    // cout <<"\nAfter deleting..\n";
+    // fp.open(CONNECTION, ios::in | ios::binary);
+    // size = get_file_size();
+    // while((size_t)fp.tellg() < size) {
+    //     fp.read((char*)&newobj, sizeof(newobj));
+    //     print_obj(newobj);
+    // }
+    // fp.close();
 }
 
 

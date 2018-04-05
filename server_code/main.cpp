@@ -15,7 +15,7 @@ int main(int argc, const char * argv[]) {
 
         prepare_readFd(readSet, sockfd);
         getMaxFd(maxfd);
-//        cout << "\nAfter fn call max: " << maxfd << endl;
+       cout << "\nAfter fn call max: " << maxfd << endl;
 
         if(select(maxfd + 1, &readSet, NULL, NULL, NULL) < 0)
             print_error("Select Error");
@@ -23,7 +23,8 @@ int main(int argc, const char * argv[]) {
         if(FD_ISSET(sockfd, &readSet))
             new_connection(sockfd);
         
-        handle_request_from_client(sockfd, readSet);
+        // else
+            // handle_request_from_client(sockfd, readSet);
     }
     return 0;
 }

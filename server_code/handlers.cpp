@@ -10,21 +10,22 @@ void new_connection(int listenFD) {
         print_error("New connection - Accept() Error", false);
     else {
         cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Connected\n";
-        // if(fork() == 0) {
-            // close(listenFD);
-            // cout<<"In fork() Trying to add to file..\n";
+        if(fork() == 0) {
+            close(listenFD);
+            cout<<"In fork() Trying to add to file..\n";
             // add client to `connections` file
-            Client clientObj(conn, cliAddr.sin_addr.s_addr, ntohs(cliAddr.sin_port));
+            Client clientObj(conn, inet_ntoa(cliAddr.sin_addr), ntohs(cliAddr.sin_port));
+            
             if(add_client(clientObj))
-                cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Added\n";
+                cout << clientObj.ip << "\t" << clientObj.port << "\t" << "Added\tFD:  "<<conn<<endl;
+//                cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Added\tFD:  "<<conn<<endl;
             else {
                 cout << "Client\t"
                 << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << endl;
-                close(conn);
                 print_error("Connection closed. Add client to file Error", false);
             }
-            // exit(0);
-        // }
+            exit(0);
+        }
     }
 }
 
@@ -54,13 +55,14 @@ void handle_request_from_client(int sockfd, fd_set &readSet) {
     
     Client obj;
     
-    while(fp.tellg() != EOF) {
+    while(!fp.eof()) {
         
         fp.read((char*)&obj, sizeof(obj));
+        
         if(FD_ISSET(obj.sockfd, &readSet)) {
-        	cout << "Found set for: " << obj.ip << "\t" << obj.port;
+            
             string msg;
-            int received = recv(obj.sockfd, (char*)&msg, MAX, 0);
+            int received = recv(obj.sockfd, (char*)&msg, MAX, MSG_DONTWAIT);
             cout << "\n received: "<<received<<endl;
             if(received <= 0 || msg == "\\quit") {
                 close(obj.sockfd);
@@ -70,8 +72,8 @@ void handle_request_from_client(int sockfd, fd_set &readSet) {
                 return;
             }
             // if(fork() == 0) {
-                // close(sockfd);
-                handle_incoming_msg(obj, msg);
+            // close(sockfd);
+            handle_incoming_msg(obj, msg);
             // }
         }
     }

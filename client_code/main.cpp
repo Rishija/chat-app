@@ -32,6 +32,9 @@ int main(int argc, const char * argv[]) {
             getline(cin, input);
             pending.push(input);
             cout << "\n Preapred to send: " << input << "---\n\n\n";
+            if(FD_ISSET(sockfd, &writeSet)) {
+                send_msg(sockfd);
+            }
             prompt();
         }
         

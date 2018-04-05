@@ -9,14 +9,15 @@
 struct Client {
 public:
     
-    Client(int clientSockfd = -1, unsigned long clientIP = 0, unsigned short clientPORT = 0, const char clientName[20] = "", const char clientRoom[20] = "") :
-    sockfd(clientSockfd), ip(clientIP), port(htons(clientPORT)){
+    Client(int clientSockfd = -1, const char clientIp[16] = "", unsigned short clientPORT = 0, const char clientName[20] = "", const char clientRoom[20] = "") :
+    sockfd(clientSockfd), port(htons(clientPORT)){
         state = LOGGED_OUT;
+        strcpy(ip, clientIp);
         strcpy(username, clientName);
         strcpy(chatroom, clientRoom);
     }
     int sockfd;
-    unsigned long ip;
+    char ip[16];
     uint16_t port;
     State state;
     char username[20];
@@ -35,6 +36,8 @@ void create_connection_file(int listenFD, sockaddr_in &servAddr);
 bool add_client(Client &obj);
 void remove_client(int clientFD);
 void send_error_msg(int clientFD, string msg);
+void print_obj(Client &obj);
+int get_file_size();
 
 // Handlers
 void new_connection(int sockfd);

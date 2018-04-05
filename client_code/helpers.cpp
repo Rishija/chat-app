@@ -21,12 +21,17 @@ void prepare_fd(fd_set &readSet, fd_set &writeSet, int sockfd) {
 void handle_incoming_msg(int sockfd) {
     
     string msg;
-    int received = recv(sockfd, (char*)&msg, MAX, 0);
+    int recvStatus = recv(sockfd, (char*)&msg, MAX, MSG_DONTWAIT);
     
-    if(received < 0) {
-        print_error("\rCan't read from server");
+    if(recvStatus < 0) {
+        if(recvStatus == EAGAIN || recvStatus == EWOULDBLOCK)
+            print_error("\rTry after some time", false);
+        else {
+            errno = recvStatus;
+            print_error("\rCan't read from server");
+        }
     }
-    if(received == 0) {
+    if(recvStatus == 0) {
         print_error("\rConnection Closed From Server", false);
         exit(0);
     }
@@ -56,9 +61,18 @@ void send_msg(int sockfd) {
     string input = pending.front();
     pending.pop();
     cout << "\nsending to server: " <<input<<endl;
-    
-    if(send(sockfd, (char*)&input, input.size(), MSG_DONTWAIT) < 0)
-        print_error("\rMessage not delivered", false);
+
+    int sendStatus = send(sockfd, (char*)&input, input.size(), MSG_DONTWAIT);
+    if(sendStatus < 0) {
+        if(sendStatus == EMSGSIZE)
+            print_error("\rMessage size too large", false);
+        else if(sendStatus == EAGAIN || sendStatus == EWOULDBLOCK)
+            print_error("\rTry after some time", false);
+        else {
+            errno = sendStatus;
+            print_error("\rSend message Error");
+        }
+    }
 
     else if(input == "\\logout")
         state = LOGGED_OUT;

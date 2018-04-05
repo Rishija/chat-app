@@ -1,6 +1,6 @@
 #include "client.h"
 
-queue<string> pending;
+queue<Message> pending;
 State state = LOGGED_OUT;
 
 int main(int argc, const char * argv[]) {
@@ -28,10 +28,13 @@ int main(int argc, const char * argv[]) {
             prompt();
         }
         
-        if(FD_ISSET(STDIN_FILENO, &readSet)) {
-            getline(cin, input);
-            pending.push(input);
-            cout << "\n Preapred to send: " << input << "---\n\n\n";
+        else if(FD_ISSET(STDIN_FILENO, &readSet)) {
+            string msg;
+            getline(cin, msg);
+            Message obj;
+            strcpy(obj.message, msg.c_str());
+            pending.push(obj);
+            cout << "\n Preapred to send: " << obj.message << "---\n\n\n";
             if(FD_ISSET(sockfd, &writeSet)) {
                 send_msg(sockfd);
             }

@@ -1,6 +1,6 @@
 #include "server.h"
 
-void new_connection(int listenFD) {
+void new_connection(int listenFD, int &recentConn) {
     
     sockaddr_in cliAddr;
     socklen_t len = sizeof(cliAddr);
@@ -9,6 +9,7 @@ void new_connection(int listenFD) {
     if(conn < 0)
         print_error("New connection - Accept() Error", false);
     else {
+        recentConn = conn;
         cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Connected\n";
         if(fork() == 0) {
             close(listenFD);
@@ -23,6 +24,9 @@ void new_connection(int listenFD) {
                 << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << endl;
                 print_error("Connection closed. Add client to file Error", false);
             }
+            char msg[] = "HOLA! WELCOME";
+            if(send(conn, msg, sizeof(msg), MSG_DONTWAIT) < 0)
+                print_error("Couldn't send to client", false);
             exit(0);
         }
     }
@@ -30,6 +34,7 @@ void new_connection(int listenFD) {
 
 void handle_incoming_msg(Client obj, string msg) {
     
+    cout<<"got msg: "<<msg<<endl;
     if(obj.state == LOGGED_OUT) {
         if(msg.substr(0,6) == "\\login") {
             // verify username and password
@@ -65,17 +70,17 @@ void handle_request_from_client(int sockfd, fd_set &readSet) {
         
         if((obj.sockfd > 0) && FD_ISSET(obj.sockfd, &readSet)) {
             
-            string msg;
-            int recvStatus = (int)recv(obj.sockfd, (char*)&msg, MAX, MSG_DONTWAIT);
-            // cout << "\nReceived: "<<recvStatus<<" from fp: "<<obj.sockfd<<" port: "<<ntohs(obj.port)<<endl;
+            char msg[MAX];
+            int recvStatus = recv(obj.sockfd, msg, MAX, MSG_DONTWAIT);
+            cout << "\nReceived: "<<recvStatus<<" from fd: "<<obj.sockfd<<" port: "<<ntohs(obj.port)
+            <<"msg: "<<msg<<endl;
             
             if(recvStatus < 0 && (recvStatus == EAGAIN || recvStatus == EWOULDBLOCK) )
                 print_error("Try receiving after some time", false);
-            else if(recvStatus <= 0 || msg == "\\quit") {
+            else if(recvStatus <= 0 || !strcmp(msg, "\\quit")) {
                 close(obj.sockfd);
                 remove_client(obj.sockfd);
                 cout << obj.ip << "\t" << htons(obj.port) << "\t" << "Disconnected\n";
-                size = get_file_size();
                 // To do: send exit of client to his chatroom
                 return;
             }

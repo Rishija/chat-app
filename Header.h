@@ -24,6 +24,10 @@ using namespace std;
 
 enum State {LOGGED_OUT = 0, LOGGED_IN, WAITING_FOR_LOGIN_RESPONSE, WAITING_FOR_SIGNUP_RESPONSE};
 
+struct Message {
+    char message[MAX];
+};
+
 void print_error(string err = "", bool shouldExit = true);
 void Socket(int &sockfd);
 

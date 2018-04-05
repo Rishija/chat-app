@@ -33,10 +33,11 @@ void create_connection_file(int listenFD, sockaddr_in &servAddr) {
     fp.close();
 }
 
-void prepare_readFd(fd_set &readSet, int sockfd) {
+void prepare_readFd(fd_set &readSet, int sockfd, int recentConn) {
     
     FD_ZERO(&readSet);
     FD_SET(sockfd, &readSet);
+    FD_SET(recentConn, &readSet);
     
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::binary);
@@ -58,12 +59,12 @@ void prepare_readFd(fd_set &readSet, int sockfd) {
     // cout << "Leaving prepare_readFD.. " << endl;
 }
 
-void getMaxFd(int &maxfd) {
+void getMaxFd(int &maxfd, int recentConn) {
     
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::binary);
     Client obj;
-    maxfd = -1;
+    maxfd = recentConn;
     int size = get_file_size();
     
     while((int)fp.tellg() < size) {
@@ -177,7 +178,9 @@ void remove_client(int clientFD) {
 void send_error_msg(int clientFD, string msg) {
     
     string newMsg = red_bold + msg + regular;
-    if(send(clientFD, (char*)&newMsg, sizeof(newMsg), 0) < 0)
-    // if(send(clientFD, (char*)&newMsg, sizeof(newMsg), MSG_DONTWAIT) < 0)
+    cout<<"ready to send client: "<<newMsg<<endl;
+    Message obj;
+    strcpy(obj.message, newMsg.c_str());
+    if(send(clientFD, obj.message, MAX, MSG_DONTWAIT) < 0)
         print_error("send_error_msg to client Error");
 }

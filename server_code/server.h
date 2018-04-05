@@ -24,14 +24,15 @@ public:
     char chatroom[20];
 };
 
+
 // Starting server
 void Bind(int &sockfd, sockaddr_in &servAddr);
 void Listen(int sockfd, int backlog);
 void start_server(int &sockfd, sockaddr_in &servAddr, int argc, const char * argv[]);
 
 // Helpers
-void prepare_readFd(fd_set &readSet, int sockfd);
-void getMaxFd(int &maxfd);
+void prepare_readFd(fd_set &readSet, int sockfd, int recentConn);
+void getMaxFd(int &maxfd, int recentConn);
 void create_connection_file(int listenFD, sockaddr_in &servAddr);
 bool add_client(Client &obj);
 void remove_client(int clientFD);
@@ -40,7 +41,7 @@ void print_obj(Client &obj);
 int get_file_size();
 
 // Handlers
-void new_connection(int sockfd);
+void new_connection(int sockfd, int &recentConn);
 void handle_incoming_msg(Client obj, string msg);
 void handle_request_from_client(int sockfd, fd_set &readSet);
 

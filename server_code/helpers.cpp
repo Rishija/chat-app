@@ -1,5 +1,21 @@
 #include "./server.h"
 
+void create_help_msg() {
+
+    strcat(helpMsg, green);
+     strcat(helpMsg, bold);
+    strcat(helpMsg,
+        "\r\\signup user pass\n\tTo signup with username = user and password = pass\n"
+        "\\login user pass\n\tTo login with username = user and password = pass\n"
+        "\\send other msg\n\tTo send personal message to client = other\n"
+        "\\join room\n\tTo join or create new chatroom = room\n"
+        "\\chatroom\n\tTo view current chatrooms\n"
+        "\\help\n\tTo see this help message\n"
+        "\\logout\n\tTo logout\n"
+        "\\quit\n\tTo exit");
+    strcat(helpMsg, regular);
+}
+
 int get_file_size() {
     
     fstream tempFP;
@@ -178,7 +194,7 @@ void remove_client(int clientFD) {
 void send_error_msg(int clientFD, string msg) {
     
     string newMsg = red_bold + msg + regular;
-    cout<<"ready to send client: "<<newMsg<<endl;
+    // cout<<"ready to send client: "<<newMsg<<endl;
     Message obj;
     strcpy(obj.message, newMsg.c_str());
     if(send(clientFD, obj.message, MAX, MSG_DONTWAIT) < 0)

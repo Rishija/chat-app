@@ -24,6 +24,7 @@ public:
     char chatroom[20];
 };
 
+extern char helpMsg[MAX];
 
 // Starting server
 void Bind(int &sockfd, sockaddr_in &servAddr);
@@ -31,6 +32,7 @@ void Listen(int sockfd, int backlog);
 void start_server(int &sockfd, sockaddr_in &servAddr, int argc, const char * argv[]);
 
 // Helpers
+void create_help_msg();
 void prepare_readFd(fd_set &readSet, int sockfd, int recentConn);
 void getMaxFd(int &maxfd, int recentConn);
 void create_connection_file(int listenFD, sockaddr_in &servAddr);

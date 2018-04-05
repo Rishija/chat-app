@@ -22,7 +22,7 @@ void handle_incoming_msg(int sockfd) {
     
     char msg[MAX];
     int recvStatus = recv(sockfd, msg, MAX, MSG_DONTWAIT);
-    cout<<"received: "<<msg<<endl;
+    // cout<<"received: "<<msg<<endl;
     
     if(recvStatus < 0) {
         if(recvStatus == EAGAIN || recvStatus == EWOULDBLOCK)
@@ -33,7 +33,7 @@ void handle_incoming_msg(int sockfd) {
         }
     }
     if(recvStatus == 0) {
-        print_error("\rConnection Closed From Server", false);
+        print_error("\rConnection Closed From Server\n", false);
         exit(0);
     }
     else {
@@ -62,9 +62,9 @@ void send_msg(int sockfd) {
     Message input = pending.front();
     pending.pop();
     string input1 = input.message;
-    cout << "\nsending to server: " <<input.message<<endl;
+    // cout << "\nsending to server: " <<input.message<<endl;
 
-    int sendStatus = send(sockfd, input.message, sizeof(input.message), MSG_DONTWAIT);
+    int sendStatus = send(sockfd, input.message, input1.size() + 1, MSG_DONTWAIT);
     if(sendStatus < 0) {
         cout<<"\nerr\n";
         if(sendStatus == EMSGSIZE)
@@ -86,5 +86,5 @@ void send_msg(int sockfd) {
     else if(input1.substr(0, 7) == "\\signup") {
         state = WAITING_FOR_SIGNUP_RESPONSE;
     }
-    cout<<"\nsent\n";
+    // cout<<"\nsent\n";
 }

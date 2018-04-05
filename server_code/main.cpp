@@ -1,7 +1,9 @@
 #include "./server.h"
 
+char helpMsg[MAX];
+
 int main(int argc, const char * argv[]) {
-    
+
     int sockfd, maxfd, recentConn;
     struct sockaddr_in servAddr;
     
@@ -11,6 +13,8 @@ int main(int argc, const char * argv[]) {
     
     create_connection_file(sockfd, servAddr);
     recentConn = sockfd;
+
+    create_help_msg();
     
     while(1) {
         

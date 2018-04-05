@@ -23,7 +23,7 @@ int main(int argc, const char * argv[]) {
             print_error("Select Error");
         
         if(FD_ISSET(sockfd, &readSet)) {
-            cout<<"\nIncoming from server\n";
+            // cout<<"\nIncoming from server\n";
             handle_incoming_msg(sockfd);
             prompt();
         }
@@ -34,7 +34,7 @@ int main(int argc, const char * argv[]) {
             Message obj;
             strcpy(obj.message, msg.c_str());
             pending.push(obj);
-            cout << "\n Preapred to send: " << obj.message << "---\n\n\n";
+            // cout << "\n Preapred to send: " << obj.message << "---\n\n\n";
             if(FD_ISSET(sockfd, &writeSet)) {
                 send_msg(sockfd);
             }

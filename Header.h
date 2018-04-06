@@ -39,7 +39,7 @@ bool send_msg(int clientFd, const char *msg, const size_t size);
 inline void print_error(string err, bool shouldExit) {
     
     if(err != "")
-        cout << red << err << regular;
+        cout << red <<bold << err << regular;
 
     if(errno){
         cout << " -> " << red << strerror(errno) << regular << endl;

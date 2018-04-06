@@ -5,9 +5,9 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#define CONNECTION "connection.bin"
+#define CONNECTION "database/connection.bin"
 #define CREDENTIAL 19
-#define DATA "data.bin"
+#define DATA "database/users.bin"
 #define red_bold "\33[91m\33[1m"
 #define helpMsgSize 352
 

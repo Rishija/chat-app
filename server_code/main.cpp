@@ -32,7 +32,7 @@ int main(int argc, const char * argv[]) {
         
         else {
             recentConn = sockfd;
-            cout<<"Request coming..\n";
+            cout<<"\nRequest coming..";
             handle_request_from_client(sockfd, readSet);
             cout<<"returned from handle request from client\n";
         }

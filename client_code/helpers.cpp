@@ -4,7 +4,7 @@ void prompt() {
     
     cout << yellow << bold << "\n";
     (state == LOGGED_IN || state == WAITING_FOR_LOGOUT_RESPONSE)
-    ? cout << "You " : cout << "> ";
+    ? cout << "You: " : cout << "> ";
     cout << regular;
     cout << flush;
 }

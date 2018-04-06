@@ -57,22 +57,27 @@ void update_client_entry(Client &clientObj) {
 
 void handle_incoming_msg(Client &clientObj, string msg) {
     
-    cout<<"got msg: "<<msg<<endl;
+    cout<<"handle_incoming_msg() got msg: "<<msg<<endl;
     if(clientObj.state == LOGGED_OUT) {
         if(msg.substr(0,6) == "\\login") {
+            cout <<"Calling handle_login().. \n";
             handle_login(clientObj, msg);
         }
         else if(msg.substr(0,7) == "\\signup") {
+            cout <<"Calling handle_signup().. \n";
             handle_signup(clientObj, msg);
             // validate username
             // if(ok) add username and password to users database
             // and change client state
         }
-        else
+        else {
+            cout <<"Sending must be logged in..\n";
             send_error_msg(clientObj.sockfd, "\rYou must be logged in");
+        }
         return;
     }
     
+    cout<<"User state found logged_in:\n";
     // User is logged_in
     if(msg == "\\logout")
         handle_logout(clientObj);
@@ -101,7 +106,7 @@ void handle_request_from_client(int sockfd, fd_set &readSet) {
             char msg[MAX];
             int recvStatus = recv(obj.sockfd, msg, MAX, MSG_DONTWAIT);
             cout << "\nReceived: "<<recvStatus<<" from fd: "<<obj.sockfd<<" port: "<<ntohs(obj.port)
-            <<"msg: "<<msg<<endl;
+            <<" msg: "<<msg<<endl;
             
             if(recvStatus < 0 && (recvStatus == EAGAIN || recvStatus == EWOULDBLOCK) )
                 print_error("Try receiving after some time", false);
@@ -114,6 +119,7 @@ void handle_request_from_client(int sockfd, fd_set &readSet) {
             }
             if(fork() == 0) {
                 close(sockfd);
+                cout <<"fork() handling the command..\n";
                 handle_incoming_msg(obj, msg);
                 exit(0);
             }

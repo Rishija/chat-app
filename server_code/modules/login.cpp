@@ -5,7 +5,10 @@ bool credentials_ok(const char *name, const char *pass) {
     fstream fp;
     fp.open(DATA, ios::in | ios::binary);
     if(!fp) {
-        print_error("Data file Error");
+        fp.close();
+        cout<<"creating file from login credentials_ok\n";
+        fp.open(DATA, ios::out | ios::binary);
+        fp.close();
         return false;
     }
     
@@ -13,6 +16,8 @@ bool credentials_ok(const char *name, const char *pass) {
     while(!fp.eof()) {
         fp.read(uName, CREDENTIAL + 1);
         fp.read(uPass, CREDENTIAL + 1);
+        cout<<"read: "<<uName<<" "<<uPass<<endl;
+        cout<<"input: "<<name<<" "<<pass<<endl;
         if(!strcmp(uName, name) && !(strcmp(uPass, pass))) {
             fp.close();
             return true;
@@ -24,15 +29,19 @@ bool credentials_ok(const char *name, const char *pass) {
 
 void handle_login(Client &clientObj, const string &msg) {
     
+    cout<<"In handle_login()..\n";
+    print_obj(clientObj);
+
     stringstream ss(msg);
     string substr;
-    ss >> substr;
     vector<string> tokens;
-    while(substr != "") {
-        tokens.push_back(substr);
+
+    while(!ss.eof()) {
         ss >> substr;
+        // cout<<"Substr: "<<substr<<"\n";
+        tokens.push_back(substr);
     }
-    
+
     if(tokens.size() != 3) {
         send_msg(clientObj.sockfd, "ill_format", 11);
         return;
@@ -48,6 +57,8 @@ void handle_login(Client &clientObj, const string &msg) {
             update_client_entry(clientObj);
         }
     }
-    else
+    else {
+        cout << "credentials didn't match..\n";
         send_msg(clientObj.sockfd, "mismatch", 9);
+    }
 }

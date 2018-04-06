@@ -10,13 +10,17 @@ SERVER_MODULES_OBJECTS := $(SERVER_MODULES:.cpp=.o)
 CLIENT_CODES := $(wildcard client_code/*.cpp)
 CLIENT_OBJECTS := $(CLIENT_CODES:.cpp=.o)
 
-all: 
+all: make_server make_client
+
+make_server:
 	cd server_code; make
 	$(CC) $(CFLAGS) $(SERVER_OBJECTS) $(SERVER_MODULES_OBJECTS) -o server
+
+make_client:
 	cd client_code; make
 	$(CC) $(CFLAGS) $(CLIENT_OBJECTS) -o client
 
 clean:
-	cd server_code; make clean
-	cd client_code; make clean
+	find . -type f -name '*.o' -delete
+	find . -type f -name '*.bin' -delete
 	rm server client

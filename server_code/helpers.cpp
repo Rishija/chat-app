@@ -1,5 +1,31 @@
 #include "./server.h"
 
+void prepare_readFd(fd_set &readSet, int sockFD, int recentConn) {
+
+    FD_ZERO(&readSet);
+    FD_SET(sockFD, &readSet);
+    // Add recently added connection to read fd set
+    FD_SET(recentConn, &readSet);
+
+    fstream fp;
+    fp.open(CONNECTION, ios::in | ios::binary);
+    if(!fp)
+        print_error("Prepare_readFD Error");
+
+    Client obj;
+    size_t size = get_file_size(CONNECTION);
+
+    // Add current connections to read fd set
+    while((size_t)fp.tellg() < size) {
+        fp.read((char*)&obj, sizeof(obj));
+        if(obj.sockFD != -1)
+            FD_SET(obj.sockFD, &readSet);
+    }
+
+    fp.close();
+}
+
+
 void create_help_msg() {
 
     strcat(helpMsg, green);
@@ -16,69 +42,9 @@ void create_help_msg() {
     strcat(helpMsg, regular);
 }
 
-int get_file_size(string fileName) {
-    
-    // cout<<"Checking size for: "<<fileName<<endl;
-    fstream tempFP;
-    tempFP.open(fileName, ios::app | ios::binary);
-    if(!tempFP)
-        print_error("Error opening connection file");
-    size_t size = (size_t)tempFP.tellp();
-    tempFP.close();
-    // cout<<"Size calculated: "<<size<<endl;
-    return size;
-}
-
-void print_obj(Client &obj) {
-    
-    cout << "Sock: " << obj.sockfd
-    << "\n ip: " << obj.ip
-    << "\n port: " << ntohs(obj.port)
-    << "\n username: " << obj.username
-    << "\n chatroom: " << obj.chatroom << endl;
-}
-
-void create_connection_file(int listenFD, sockaddr_in &servAddr) {
-    
-    fstream fp;
-    fp.open(CONNECTION, ios::out | ios::binary);
-    if(!fp)
-        print_error("Create connection file Error");
-    
-    Client serverListenFD(listenFD, inet_ntoa(servAddr.sin_addr), ntohs(servAddr.sin_port), "server");
-    fp.write((char*)&serverListenFD, sizeof(serverListenFD));
-    // cout<<"\nCREATED\n";
-    fp.close();
-}
-
-void prepare_readFd(fd_set &readSet, int sockfd, int recentConn) {
-    
-    FD_ZERO(&readSet);
-    FD_SET(sockfd, &readSet);
-    FD_SET(recentConn, &readSet);
-    
-    fstream fp;
-    fp.open(CONNECTION, ios::in | ios::binary);
-    if(!fp)
-        print_error("Prepare_readFD Error");
-    
-    Client obj;
-    size_t size = get_file_size(CONNECTION);
-    
-    while((size_t)fp.tellg() < size) {
-        fp.read((char*)&obj, sizeof(obj));
-        // cout<<"FD_SET for : ";
-        // print_obj(obj);
-        if(obj.sockfd != -1)
-            FD_SET(obj.sockfd, &readSet);
-    }
-    
-    fp.close();
-    // cout << "Leaving prepare_readFD.. " << endl;
-}
 
 void getMaxFd(int &maxfd, int recentConn) {
-    
+
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::binary);
     Client obj;
@@ -87,141 +53,131 @@ void getMaxFd(int &maxfd, int recentConn) {
     
     while((int)fp.tellg() < size) {
         fp.read((char*)&obj, sizeof(obj));
-        //        cout << "Sock: " << obj.sockfd
-        //        << "\n ip: " << obj.ip
-        //        << "\n port: " << obj.port
-        //        << "\n username: " << obj.username
-        //        << "\n chatroom: " << obj.chatroom << endl;
-        maxfd = max(maxfd, obj.sockfd);
+        maxfd = max(maxfd, obj.sockFD);
     }
-    
+
     fp.close();
-    //    cout << "Leaving getmaxfd.. " << endl;
 }
 
+
+void create_connection_file(int listenFD, sockaddr_in &servAddr) {
+
+    fstream fp;
+    fp.open(CONNECTION, ios::out | ios::binary);
+    if(!fp)
+        print_error("Create connection file Error");
+
+    // Add server listen fd to connections file
+    Client serverListenFD(listenFD, inet_ntoa(servAddr.sin_addr), ntohs(servAddr.sin_port), "server");
+    fp.write((char*)&serverListenFD, sizeof(serverListenFD));
+    // cout<<"\nCREATED\n";
+    fp.close();
+}
+
+
 bool add_client(Client &clientObj) {
-    
-    // cout << "\nIn add_client.. \nWriting this obj.."<<endl;
-    // print_obj(clientObj);
-    // cout <<"\nData in file..\n";
-    
+
     size_t size = get_file_size(CONNECTION);
-    
+
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::out | ios::binary);
     if(!fp)
         return false;
-    
+
     Client readObj(1);
-    while((size_t)fp.tellg() < size && readObj.sockfd > 0) {
+    while((size_t)fp.tellg() < size && readObj.sockFD > 0) {
         fp.read((char*)&readObj, sizeof(readObj));
-        // cout<<"\n---read---\n";
-        // print_obj(readObj);
     }
-    
-    if(readObj.sockfd < 0) {
+
+    // Found empty entry, write over this
+    if(readObj.sockFD < 0) {
+        // Seek back to empty entry
         fp.seekp((size_t)fp.tellg() - sizeof(readObj), ios::beg);
         fp.write((char*)&clientObj, sizeof(clientObj));
-        // cout << "\n---Wrote in mid---\n";
         fp.close();
     }
+    // Append in the file
     else {
         fp.close();
         fp.open(CONNECTION, ios::app | ios::binary);
         fp.write((char*)&clientObj, sizeof(clientObj));
-         // cout << "\n---Wrote at end---\n";
         fp.close();
     }
-    // return true;
-    
-    // cout <<"\nfinished writing, now reading..\n";
-    // size = get_file_size();
-    
-    // fp.open(CONNECTION, ios::in | ios::binary);
-    // Client obj;
-    
-    // while((size_t)fp.tellg() < size) {
-    //     fp.read((char*)&obj, sizeof(obj));
-    //     print_obj(obj);
-    // }
-    
-    // fp.close();
-    // cout<<"Leaving add_client..\n";
-    
     return true;
 }
 
 
-
 void remove_client(int clientFD) {
-    
-    // cout <<"In remove client, removing client with fd: "<<clientFD<<endl;
-    // cout <<"\n\nBefore deleting..\n";
-    // Client newobj;
-    // fstream fp;
-    // fp.open(CONNECTION, ios::in | ios::binary);
-    // size_t size = get_file_size();
-    // while((size_t)fp.tellg() < size) {
-    //     fp.read((char*)&newobj, sizeof(newobj));
-    //     print_obj(newobj);
-    // }
-    // fp.close();
-    
-    
+
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::out | ios::binary);
-    
+
     Client readObj, nullObj;
     fp.read((char*)&readObj, sizeof(readObj));
-    while(readObj.sockfd != clientFD)
+    while(readObj.sockFD != clientFD)
         fp.read((char*)&readObj, sizeof(readObj));
-    
+
+    // Seek back to matched client postion
     fp.seekp((size_t)fp.tellp() - sizeof(readObj), ios::beg);
+    // Write empty entry
     fp.write((char*)&nullObj, sizeof(nullObj));
     fp.close();
-    
-    
-    
-    // cout <<"\nAfter deleting..\n";
-    // fp.open(CONNECTION, ios::in | ios::binary);
-    // size = get_file_size();
-    // while((size_t)fp.tellg() < size) {
-    //     fp.read((char*)&newobj, sizeof(newobj));
-    //     print_obj(newobj);
-    // }
-    // fp.close();
+}
+
+
+void update_client_entry(Client &clientObj) {
+
+    size_t size = get_file_size(CONNECTION);
+
+    fstream fp;
+    fp.open(CONNECTION, ios::in | ios::out | ios::binary);
+
+    Client readObj;
+    while((size_t)fp.tellg() < size && readObj.sockFD != clientObj.sockFD) {
+        fp.read((char*)&readObj, sizeof(readObj));
+        // print_obj(readObj);
+    }
+
+    // Seek back to required postion and write new object
+    if(readObj.sockFD == clientObj.sockFD) {
+        fp.seekp((size_t)fp.tellg() - sizeof(readObj), ios::beg);
+        fp.write((char*)&clientObj, sizeof(clientObj));
+    }
+    // else
+    //     cout << "Client not found";
+    fp.close();
 }
 
 
 void send_error_msg(int clientFD, string msg) {
-    
+
+    // Formatting
     string newMsg = red_bold + msg + regular;
-    // cout<<"ready to send client: "<<newMsg<<endl;
-    Message obj;
-    strcpy(obj.message, newMsg.c_str());
-    if(send(clientFD, obj.message, newMsg.size() + 1, MSG_DONTWAIT) < 0)
+    char msgToSend[MAX];
+    strcpy(msgToSend, newMsg.c_str());
+
+    if(send(clientFD, msgToSend, newMsg.size() + 1, MSG_DONTWAIT) < 0)
         print_error("send_error_msg to client Error");
 }
 
-void forward_msg(Client &clientObj, string msg) {
 
-    string newMsg = magenta_bold;
-    newMsg += clientObj.username;
-    newMsg += ": \33[0m" + msg + "\n";
-    size_t size = get_file_size(CONNECTION);
-    
-    fstream fp;
-    fp.open(CONNECTION, ios::in | ios::binary);
-    
-    Client readObj;
-    while((size_t)fp.tellg() < size) {
-        fp.read((char*)&readObj, sizeof(readObj));
-        if(readObj.sockfd != clientObj.sockfd &&
-            !strcmp(readObj.chatroom, clientObj.chatroom)
-            && readObj.state == LOGGED_IN)
-            send_msg(readObj.sockfd, newMsg.c_str(), newMsg.size() + 1);
-        // cout<<"\n---read---\n";
-        // print_obj(readObj);
-    }
-    fp.close();
+int get_file_size(string fileName) {
+
+    fstream tempFP;
+    tempFP.open(fileName, ios::app | ios::binary);
+    if(!tempFP)
+        print_error("Error opening connection file");
+    size_t size = (size_t)tempFP.tellp();
+    tempFP.close();
+    return size;
+}
+
+
+void print_obj(Client &obj) {
+
+    cout << "Sock: " << obj.sockFD
+    << "\n ip: " << obj.ip
+    << "\n port: " << ntohs(obj.port)
+    << "\n username: " << obj.username
+    << "\n chatroom: " << obj.chatroom << endl;
 }

@@ -4,45 +4,50 @@ queue<Message> pending;
 State state = LOGGED_OUT;
 
 int main(int argc, const char * argv[]) {
-    
-    int sockfd;
-    struct sockaddr_in servAddr;
-    connect_to_server(sockfd, servAddr, argc, argv);
 
-    int maxfd = sockfd + 1;
+    int sockFD;
+    struct sockaddr_in servAddr;
+    connect_to_server(sockFD, servAddr, argc, argv);
+
+    int maxfd = sockFD + 1;
     string input;
     fd_set readSet, writeSet;
 
     prompt();
 
     while(true) {
-        
-        prepare_fd(readSet, writeSet, sockfd);
-        
+
+        prepare_fd(readSet, writeSet, sockFD);
+
         if(select(maxfd, &readSet, &writeSet, NULL, NULL) < 0)
             print_error("Select Error");
-        
-        if(FD_ISSET(sockfd, &readSet)) {
-            // cout<<"\nIncoming from server\n";
-            handle_incoming_msg(sockfd);
+
+        // Server is sending message
+        if(FD_ISSET(sockFD, &readSet)) {
+            handle_incoming_msg(sockFD);
             prompt();
         }
-        
+
+        // Input from stdin
         else if(FD_ISSET(STDIN_FILENO, &readSet)) {
+
+            // Get input from stdin
             string msg;
             getline(cin, msg);
             Message obj;
             strcpy(obj.message, msg.c_str());
+            // Push in queue
             pending.push(obj);
-            // cout << "\n Preapred to send: " << obj.message << "---\n\n\n";
-            if(FD_ISSET(sockfd, &writeSet)) {
-                send_msg(sockfd);
+
+            // Server ready to receive
+            if(FD_ISSET(sockFD, &writeSet)) {
+                send_msg(sockFD);
             }
             prompt();
         }
-        
-        else if(FD_ISSET(sockfd, &writeSet)) {
-            send_msg(sockfd);
+
+        else if(FD_ISSET(sockFD, &writeSet)) {
+            send_msg(sockFD);
         }
     }
     return 0;

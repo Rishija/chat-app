@@ -28,14 +28,12 @@ enum State {LOGGED_OUT = 0,
     WAITING_FOR_SIGNUP_RESPONSE,
     WAITING_FOR_LOGOUT_RESPONSE };
 
-struct Message {
-    char message[MAX];
-};
 
 void print_error(string err = "", bool shouldExit = true);
-void Socket(int &sockfd);
+void Socket(int &sockFD);
 bool send_msg(int clientFd, const char *msg, const size_t size);
 
+// Print error with message on stdin
 inline void print_error(string err, bool shouldExit) {
     
     if(err != "")
@@ -48,15 +46,17 @@ inline void print_error(string err, bool shouldExit) {
     }
 }
 
-inline void Socket(int &sockfd) {
+// Creates a sock fd
+inline void Socket(int &sockFD) {
     
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    sockfd < 0 ? print_error("Socket Error") : print_error();
+    sockFD = socket(AF_INET, SOCK_STREAM, 0);
+    sockFD < 0 ? print_error("Socket Error") : print_error();
 }
 
-inline bool send_msg(int sockfd, const char *msg, const size_t size) {
+// Send message to sockFD
+inline bool send_msg(int sockFD, const char *msg, const size_t size) {
 
-    int sendStatus = send(sockfd, msg, size, MSG_DONTWAIT);
+    int sendStatus = send(sockFD, msg, size, MSG_DONTWAIT);
     if(sendStatus < 0) {
         cout<<"\nerr\n";
         if(sendStatus == EMSGSIZE) {

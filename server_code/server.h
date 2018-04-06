@@ -5,11 +5,14 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <map>
 #define CONNECTION "database/connection.bin"
 #define CREDENTIAL 19
 #define DATA "database/users.bin"
+#define CHATROOM "database/chatrooms.bin"
 #define red_bold "\33[91m\33[1m"
-#define helpMsgSize 352
+#define magenta_bold "\33[95m\33[1m\r"
+#define helpMsgSize 362
 
 struct Client {
 public:
@@ -29,6 +32,7 @@ public:
     char chatroom[20];
 };
 
+extern map<string, int> chatrooms;
 extern char helpMsg[MAX];
 
 // Starting server
@@ -45,7 +49,8 @@ bool add_client(Client &obj);
 void remove_client(int clientFD);
 void send_error_msg(int clientFD, string msg);
 void print_obj(Client &obj);
-int get_file_size();
+int get_file_size(string fileName);
+void forward_msg(Client &clientObj, string msg);
 
 // Handlers
 void update_client_entry(Client &clientObj);
@@ -64,5 +69,12 @@ void handle_signup(Client &clientObj, const string &msg);
 
 // Logout
 void handle_logout(Client &clientObj);
+
+// Commands
+void send_chatrooms(int sockfd);
+void increase_room_count(string chatroom);
+void decrease_room_count(string chatroom);
+void send_msg_by_name(int sockfd, string name, string msg);
+void handle_command(Client &clientObj, string msg);
 
 #endif /* Server_h */

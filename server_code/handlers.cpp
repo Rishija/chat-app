@@ -18,7 +18,7 @@ void new_connection(int listenFD, int &recentConn) {
             Client clientObj(conn, inet_ntoa(cliAddr.sin_addr), ntohs(cliAddr.sin_port));
             
             if(add_client(clientObj))
-                        cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Added\tFD:  "<<conn<<endl;
+                cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Added\tFD:  "<<conn<<endl;
             else {
                 cout << "Client\t"
                 << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << endl;
@@ -33,7 +33,7 @@ void new_connection(int listenFD, int &recentConn) {
 
 void update_client_entry(Client &clientObj) {
     
-    size_t size = get_file_size();
+    size_t size = get_file_size(CONNECTION);
     
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::out | ios::binary);
@@ -57,7 +57,15 @@ void update_client_entry(Client &clientObj) {
 
 void handle_incoming_msg(Client &clientObj, string msg) {
     
+    if(msg.size() == 0)
+        return;
+
     cout<<"handle_incoming_msg() got msg: "<<msg<<endl;
+    if(msg == "\\help") {
+        send_msg(clientObj.sockfd, helpMsg, helpMsgSize);
+        return;
+    }
+
     if(clientObj.state == LOGGED_OUT) {
         if(msg.substr(0,6) == "\\login") {
             cout <<"Calling handle_login().. \n";
@@ -66,21 +74,21 @@ void handle_incoming_msg(Client &clientObj, string msg) {
         else if(msg.substr(0,7) == "\\signup") {
             cout <<"Calling handle_signup().. \n";
             handle_signup(clientObj, msg);
-            // validate username
-            // if(ok) add username and password to users database
-            // and change client state
         }
         else {
-            cout <<"Sending must be logged in..\n";
-            send_error_msg(clientObj.sockfd, "\rYou must be logged in");
+            // cout <<"Sending must be logged in..\n";
+            send_error_msg(clientObj.sockfd, "\rYou must be logged in\n");
         }
         return;
     }
     
     cout<<"User state found logged_in:\n";
     // User is logged_in
-    if(msg == "\\logout")
-        handle_logout(clientObj);
+
+    if(msg[0] == '\\')
+        handle_command(clientObj, msg);
+    else
+        forward_msg(clientObj, msg);
 }
 
 void handle_request_from_client(int sockfd, fd_set &readSet) {
@@ -88,12 +96,12 @@ void handle_request_from_client(int sockfd, fd_set &readSet) {
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::binary);
     if(!fp)
-        print_error("handle_request Error");
+        print_error("handle_request Error\n");
     
     Client obj;
     // Not to check for listen fd
     fp.read((char*)&obj, sizeof(obj));
-    size_t size = get_file_size();
+    size_t size = get_file_size(CONNECTION);
     // cout<<"original size: "<<size<<endl;
     
     while((size_t)fp.tellg() < size) {
@@ -109,10 +117,13 @@ void handle_request_from_client(int sockfd, fd_set &readSet) {
             <<" msg: "<<msg<<endl;
             
             if(recvStatus < 0 && (recvStatus == EAGAIN || recvStatus == EWOULDBLOCK) )
-                print_error("Try receiving after some time", false);
+                print_error("Try receiving after some time\n", false);
             else if(recvStatus <= 0 || !strcmp(msg, "\\quit")) {
+                forward_msg(obj, "I'm leaving!");
                 close(obj.sockfd);
                 remove_client(obj.sockfd);
+                decrease_room_count(obj.chatroom);
+                // --chatrooms[obj.chatroom];
                 cout << obj.ip << "\t" << htons(obj.port) << "\t" << "Disconnected\n";
                 // To do: send exit of client to his chatroom, remove from connections
                 return;

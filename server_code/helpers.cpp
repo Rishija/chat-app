@@ -3,7 +3,7 @@
 void create_help_msg() {
 
     strcat(helpMsg, green);
-     strcat(helpMsg, bold);
+     // strcat(helpMsg, bold);
     strcat(helpMsg,
         "\r\\signup user pass\n\tTo signup with username = user and password = pass\n"
         "\\login user pass\n\tTo login with username = user and password = pass\n"
@@ -12,18 +12,20 @@ void create_help_msg() {
         "\\chatroom\n\tTo view current chatrooms\n"
         "\\help\n\tTo see this help message\n"
         "\\logout\n\tTo logout\n"
-        "\\quit\n\tTo exit");
+        "\\quit\n\tTo exit\n");
     strcat(helpMsg, regular);
 }
 
-int get_file_size() {
+int get_file_size(string fileName) {
     
+    // cout<<"Checking size for: "<<fileName<<endl;
     fstream tempFP;
-    tempFP.open(CONNECTION, ios::app | ios::binary);
+    tempFP.open(fileName, ios::app | ios::binary);
     if(!tempFP)
         print_error("Error opening connection file");
     size_t size = (size_t)tempFP.tellp();
     tempFP.close();
+    // cout<<"Size calculated: "<<size<<endl;
     return size;
 }
 
@@ -61,7 +63,7 @@ void prepare_readFd(fd_set &readSet, int sockfd, int recentConn) {
         print_error("Prepare_readFD Error");
     
     Client obj;
-    size_t size = get_file_size();
+    size_t size = get_file_size(CONNECTION);
     
     while((size_t)fp.tellg() < size) {
         fp.read((char*)&obj, sizeof(obj));
@@ -81,7 +83,7 @@ void getMaxFd(int &maxfd, int recentConn) {
     fp.open(CONNECTION, ios::in | ios::binary);
     Client obj;
     maxfd = recentConn;
-    int size = get_file_size();
+    int size = get_file_size(CONNECTION);
     
     while((int)fp.tellg() < size) {
         fp.read((char*)&obj, sizeof(obj));
@@ -103,7 +105,7 @@ bool add_client(Client &clientObj) {
     // print_obj(clientObj);
     // cout <<"\nData in file..\n";
     
-    size_t size = get_file_size();
+    size_t size = get_file_size(CONNECTION);
     
     fstream fp;
     fp.open(CONNECTION, ios::in | ios::out | ios::binary);
@@ -166,7 +168,7 @@ void remove_client(int clientFD) {
     // fp.close();
     
     
-   fstream fp;
+    fstream fp;
     fp.open(CONNECTION, ios::in | ios::out | ios::binary);
     
     Client readObj, nullObj;
@@ -197,6 +199,29 @@ void send_error_msg(int clientFD, string msg) {
     // cout<<"ready to send client: "<<newMsg<<endl;
     Message obj;
     strcpy(obj.message, newMsg.c_str());
-    if(send(clientFD, obj.message, MAX, MSG_DONTWAIT) < 0)
+    if(send(clientFD, obj.message, newMsg.size() + 1, MSG_DONTWAIT) < 0)
         print_error("send_error_msg to client Error");
+}
+
+void forward_msg(Client &clientObj, string msg) {
+
+    string newMsg = magenta_bold;
+    newMsg += clientObj.username;
+    newMsg += ": \33[0m" + msg + "\n";
+    size_t size = get_file_size(CONNECTION);
+    
+    fstream fp;
+    fp.open(CONNECTION, ios::in | ios::binary);
+    
+    Client readObj;
+    while((size_t)fp.tellg() < size) {
+        fp.read((char*)&readObj, sizeof(readObj));
+        if(readObj.sockfd != clientObj.sockfd &&
+            !strcmp(readObj.chatroom, clientObj.chatroom)
+            && readObj.state == LOGGED_IN)
+            send_msg(readObj.sockfd, newMsg.c_str(), newMsg.size() + 1);
+        // cout<<"\n---read---\n";
+        // print_obj(readObj);
+    }
+    fp.close();
 }

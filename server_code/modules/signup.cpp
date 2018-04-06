@@ -37,7 +37,7 @@ bool add_to_data(const char *name, const char *pass) {
     fp.write(pass, CREDENTIAL + 1);
     fp.close();
 
-    cout<<"Added to data file. Now reading data file..\n";
+    // cout<<"Added to data file. Now reading data file..\n";
     fp.open(DATA, ios::in | ios::binary);
 
     char uName[CREDENTIAL + 1], uPass[CREDENTIAL + 1];
@@ -52,8 +52,8 @@ bool add_to_data(const char *name, const char *pass) {
 
 void handle_signup(Client &clientObj, const string &msg) {
     
-    cout<<"In handle_signup()..\n";
-    print_obj(clientObj);
+    // cout<<"In handle_signup()..\n";
+    // print_obj(clientObj);
 
     stringstream ss(msg);
     string substr;
@@ -77,14 +77,14 @@ void handle_signup(Client &clientObj, const string &msg) {
         if(add_to_data(tokens[1].c_str(), tokens[2].c_str()) &&
            send_msg(clientObj.sockfd, "signed_up", 10)) {
             
-            cout<<"signed up..\n";
+            // cout<<"signed up..\n";
             clientObj.state = LOGGED_IN;
             strcpy(clientObj.username, tokens[1].c_str());
             update_client_entry(clientObj);
         }
     }
     else {
-        cout<<"username taken..\n";
+        // cout<<"username taken..\n";
         send_msg(clientObj.sockfd, "username_taken", 15);
     }
 }

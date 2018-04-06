@@ -2,7 +2,7 @@
 
 void prompt() {
     
-    cout << yellow << bold << "\n";
+    cout << yellow << bold ;
     (state == LOGGED_IN || state == WAITING_FOR_LOGOUT_RESPONSE)
     ? cout << "You: " : cout << "> ";
     cout << regular;
@@ -23,14 +23,14 @@ void handle_incoming_msg(int sockfd) {
     
     char msg[MAX];
     int recvStatus = recv(sockfd, msg, MAX, MSG_DONTWAIT);
-    // cout<<"received: "<<msg<<endl;
+    // cout<<"\nreceived: "<<msg<<endl;
     
     if(recvStatus < 0) {
         if(recvStatus == EAGAIN || recvStatus == EWOULDBLOCK)
-            print_error("\rTry receiving after some time", false);
+            print_error("\rTry receiving after some time\n", false);
         else {
             errno = recvStatus;
-            print_error("\rCan't read from server");
+            print_error("\rCan't read from server\n");
         }
     }
     if(recvStatus == 0) {
@@ -45,11 +45,11 @@ void handle_incoming_msg(int sockfd) {
             }
             else if(!strcmp(msg, "mismatch")) {
                 state = LOGGED_OUT;
-                print_error("\rUsername and password doesn't match", false);
+                print_error("\rUsername and password doesn't match\n", false);
             }
             else if(!strcmp(msg, "ill_format")) {
                 state = LOGGED_OUT;
-                print_error("\rEnter valid username and password", false);
+                print_error("\rEnter valid username and password\n", false);
             }
         }
         else if(state == WAITING_FOR_SIGNUP_RESPONSE) {
@@ -59,11 +59,11 @@ void handle_incoming_msg(int sockfd) {
             }
             else if(!strcmp(msg, "username_taken")) {
                 state = LOGGED_OUT;
-                print_error("\rUsername already taken", false);
+                print_error("\rUsername already taken\n", false);
             }
             else if(!strcmp(msg, "ill_format")) {
                 state = LOGGED_OUT;
-                print_error("\rEnter valid username and password", false);
+                print_error("\rEnter valid username and password\n", false);
             }
         }
         else if(state == WAITING_FOR_LOGOUT_RESPONSE) {
@@ -73,7 +73,7 @@ void handle_incoming_msg(int sockfd) {
             }
             else if(!strcmp(msg, "cant_logout")) {
                 state = LOGGED_IN;
-                print_error("\rCant't Log out, Try again later", false);
+                print_error("\rCant't Log out, Try again later\n", false);
             }
             else
                 cout << msg;
@@ -99,10 +99,10 @@ void send_msg(int sockfd) {
             state = WAITING_FOR_LOGOUT_RESPONSE;
         }
 
-        else if(input1.substr(0, 6) == "\\login") {
+        else if(input1.substr(0, 6) == "\\login" && state == LOGGED_OUT) {
             state = WAITING_FOR_LOGIN_RESPONSE;
         }
-        else if(input1.substr(0, 7) == "\\signup") {
+        else if(input1.substr(0, 7) == "\\signup" && state == LOGGED_OUT) {
             state = WAITING_FOR_SIGNUP_RESPONSE;
         }
     }

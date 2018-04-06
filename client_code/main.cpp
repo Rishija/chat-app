@@ -41,7 +41,7 @@ int main(int argc, const char * argv[]) {
             prompt();
         }
         
-        if(FD_ISSET(sockfd, &writeSet)) {
+        else if(FD_ISSET(sockfd, &writeSet)) {
             send_msg(sockfd);
         }
     }

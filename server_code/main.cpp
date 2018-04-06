@@ -1,6 +1,7 @@
 #include "./server.h"
 
 char helpMsg[MAX];
+map<string, int> chatrooms;
 
 int main(int argc, const char * argv[]) {
 
@@ -34,7 +35,7 @@ int main(int argc, const char * argv[]) {
             recentConn = sockfd;
             cout<<"\nRequest coming..";
             handle_request_from_client(sockfd, readSet);
-            cout<<"returned from handle request from client\n";
+            // cout<<"returned from handle request from client\n";
         }
     }
     return 0;

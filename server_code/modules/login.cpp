@@ -6,7 +6,7 @@ bool credentials_ok(const char *name, const char *pass) {
     fp.open(DATA, ios::in | ios::binary);
     if(!fp) {
         fp.close();
-        cout<<"creating file from login credentials_ok\n";
+        // cout<<"creating file from login credentials_ok\n";
         fp.open(DATA, ios::out | ios::binary);
         fp.close();
         return false;
@@ -16,8 +16,8 @@ bool credentials_ok(const char *name, const char *pass) {
     while(!fp.eof()) {
         fp.read(uName, CREDENTIAL + 1);
         fp.read(uPass, CREDENTIAL + 1);
-        cout<<"read: "<<uName<<" "<<uPass<<endl;
-        cout<<"input: "<<name<<" "<<pass<<endl;
+        // cout<<"read: "<<uName<<" "<<uPass<<endl;
+        // cout<<"input: "<<name<<" "<<pass<<endl;
         if(!strcmp(uName, name) && !(strcmp(uPass, pass))) {
             fp.close();
             return true;
@@ -29,8 +29,8 @@ bool credentials_ok(const char *name, const char *pass) {
 
 void handle_login(Client &clientObj, const string &msg) {
     
-    cout<<"In handle_login()..\n";
-    print_obj(clientObj);
+    // cout<<"In handle_login()..\n";
+    // print_obj(clientObj);
 
     stringstream ss(msg);
     string substr;
@@ -54,11 +54,12 @@ void handle_login(Client &clientObj, const string &msg) {
         if(send_msg(clientObj.sockfd, "logged_in", 10)) {
             clientObj.state = LOGGED_IN;
             strcpy(clientObj.username, tokens[1].c_str());
+            strcpy(clientObj.chatroom, "");
             update_client_entry(clientObj);
         }
     }
     else {
-        cout << "credentials didn't match..\n";
+        // cout << "credentials didn't match..\n";
         send_msg(clientObj.sockfd, "mismatch", 9);
     }
 }

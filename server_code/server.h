@@ -3,7 +3,11 @@
 
 #include "../Header.h"
 #include <fstream>
+#include <sstream>
+#include <vector>
 #define CONNECTION "connection.bin"
+#define CREDENTIAL 19
+#define DATA "data.bin"
 #define red_bold "\33[91m\33[1m"
 #define helpMsgSize 352
 
@@ -44,8 +48,21 @@ void print_obj(Client &obj);
 int get_file_size();
 
 // Handlers
+void update_client_entry(Client &clientObj);
 void new_connection(int sockfd, int &recentConn);
-void handle_incoming_msg(Client obj, string msg);
+void handle_incoming_msg(Client &clientObj, string msg);
 void handle_request_from_client(int sockfd, fd_set &readSet);
+
+// Login
+bool credentials_ok(const char *name, const char *pass);
+void handle_login(Client &clientObj, const string &msg);
+
+// Signup
+bool valid_username(const char *name);
+bool add_to_data(const char *name, const char *pass);
+void handle_signup(Client &clientObj, const string &msg);
+
+// Logout
+void handle_logout(Client &clientObj);
 
 #endif /* Server_h */

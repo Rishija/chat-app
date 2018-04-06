@@ -31,22 +31,51 @@ void new_connection(int listenFD, int &recentConn) {
     }
 }
 
-void handle_incoming_msg(Client obj, string msg) {
+void update_client_entry(Client &clientObj) {
+    
+    size_t size = get_file_size();
+    
+    fstream fp;
+    fp.open(CONNECTION, ios::in | ios::out | ios::binary);
+    
+    Client readObj;
+    while((size_t)fp.tellg() < size && readObj.sockfd != clientObj.sockfd) {
+        fp.read((char*)&readObj, sizeof(readObj));
+        // cout<<"\n---read---\n";
+        // print_obj(readObj);
+    }
+    
+    if(readObj.sockfd == clientObj.sockfd) {
+        fp.seekp((size_t)fp.tellg() - sizeof(readObj), ios::beg);
+        fp.write((char*)&clientObj, sizeof(clientObj));
+    }
+    else
+        cout << "Client not found";
+    fp.close();
+}
+
+
+void handle_incoming_msg(Client &clientObj, string msg) {
     
     cout<<"got msg: "<<msg<<endl;
-    if(obj.state == LOGGED_OUT) {
+    if(clientObj.state == LOGGED_OUT) {
         if(msg.substr(0,6) == "\\login") {
-            // verify username and password
-            // if(ok) change client state
+            handle_login(clientObj, msg);
         }
         else if(msg.substr(0,7) == "\\signup") {
+            handle_signup(clientObj, msg);
             // validate username
             // if(ok) add username and password to users database
             // and change client state
         }
         else
-            send_error_msg(obj.sockfd, "\rYou must be logged in");
+            send_error_msg(clientObj.sockfd, "\rYou must be logged in");
+        return;
     }
+    
+    // User is logged_in
+    if(msg == "\\logout")
+        handle_logout(clientObj);
 }
 
 void handle_request_from_client(int sockfd, fd_set &readSet) {

@@ -13,6 +13,6 @@ void handle_incoming_msg(int sockfd);
 void send_msg(int sockfd);
 
 extern State state;
-extern queue<Message> pending;;
+extern queue<Message> pending;
 
 #endif /* Client_h */

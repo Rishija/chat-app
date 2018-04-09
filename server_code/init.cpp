@@ -37,6 +37,6 @@ void start_server(int &sockFD, sockaddr_in &servAddr, int argc, const char * arg
 
     cout << setw(atoi(getenv("COLUMNS"))/2 - 4) << green << bold << "SERVER ON" << regular << setw(0) << endl;
     cout << "IP: " << inet_ntoa(servAddr.sin_addr) << "\t";
-    cout << "Port: " << servAddr.sin_port<< "\t";
+    // cout << "Port: " << servAddr.sin_port<< "\t";
     cout << "Port: " << ntohs(servAddr.sin_port) << endl << endl;
 }

@@ -21,7 +21,7 @@ void new_connection(int listenFD, int &recentConn) {
 
             // add client to `connections` file
             if(add_client(clientObj))
-                cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Added\tFD:  "<<conn<<endl;
+                cout << inet_ntoa(cliAddr.sin_addr) << "\t" << ntohs(cliAddr.sin_port) << "\t" << "Added\t\tFD:  "<<conn<<endl;
 
             else {
                 cout << "Client\t"

@@ -35,7 +35,7 @@ void create_help_msg() {
         "\\login user pass\n\tTo login with username = user and password = pass\n"
         "\\send other msg\n\tTo send personal message to client = other\n"
         "\\join room\n\tTo join or create new chatroom = room\n"
-        "\\chatroom\n\tTo view current chatrooms\n"
+        "\\chatrooms\n\tTo view current chatrooms\n"
         "\\help\n\tTo see this help message\n"
         "\\logout\n\tTo logout\n"
         "\\quit\n\tTo exit\n");
@@ -84,6 +84,12 @@ bool add_client(Client &clientObj) {
     if(!fp)
         return false;
 
+    if(size == 0) {
+        fp.write((char*)&clientObj, sizeof(clientObj));
+        fp.close();
+        return true;
+    }
+
     Client readObj(1);
     while((size_t)fp.tellg() < size && readObj.sockFD > 0) {
         fp.read((char*)&readObj, sizeof(readObj));
@@ -98,8 +104,6 @@ bool add_client(Client &clientObj) {
     }
     // Append in the file
     else {
-        fp.close();
-        fp.open(CONNECTION, ios::app | ios::binary);
         fp.write((char*)&clientObj, sizeof(clientObj));
         fp.close();
     }

@@ -12,7 +12,7 @@
 #define CHATROOM "database/chatrooms.bin"
 #define red_bold "\33[91m\33[1m"
 #define magenta_bold "\33[95m\33[1m\r"
-#define helpMsgSize 362
+#define helpMsgSize 363
 
 struct Client {
 public:

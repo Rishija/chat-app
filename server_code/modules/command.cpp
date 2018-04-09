@@ -25,12 +25,18 @@ void handle_other_commands(Client &clientObj, string msg) {
     	return;
     }
 
-    if(tokens[0] == "\\chatroom" && tokens.size() == 1) {
+    if(tokens[0] == "\\chatrooms" && tokens.size() == 1) {
     	send_chatrooms(clientObj.sockFD);
     	return;
     }
 
     if(tokens[0] == "\\join" && tokens.size() == 2 && tokens[1].size() <= CREDENTIAL) {
+        // Send leaving to client's chatroom
+        forward_msg(clientObj, "I'm leaving!");
+        // Decrease count of chatroom client was member of
+        decrease_room_count(clientObj.chatroom);
+
+        // Update new chatroom
     	strcpy(clientObj.chatroom, tokens[1].c_str());
         // Increase count for chatroom client joined
     	increase_room_count(tokens[1]);
@@ -53,7 +59,7 @@ void handle_other_commands(Client &clientObj, string msg) {
     			break;
     	}
         // Format message
-    	temp += ": \33[0m" + msg.substr(i + 1) + "\n";
+    	temp += " (P) : \33[0m" + msg.substr(i + 1) + "\n";
     	send_msg_by_name(clientObj.sockFD, tokens[1], temp);
     	return;
     }

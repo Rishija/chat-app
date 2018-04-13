@@ -12,6 +12,7 @@
 #include <map>
 #include <sys/select.h>
 #include <unistd.h>
+#include <climits>
 using namespace std;
 
 #define PORT 5555

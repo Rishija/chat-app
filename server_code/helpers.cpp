@@ -3,7 +3,7 @@
 void prepare_readFd(fd_set &readSet, int sockFD, int recentConn) {
 
     FD_ZERO(&readSet);
-    FD_SET(sockFD, &readSet);
+
     // Add recently added connection to read fd set
     FD_SET(recentConn, &readSet);
 
@@ -15,7 +15,7 @@ void prepare_readFd(fd_set &readSet, int sockFD, int recentConn) {
     Client obj;
     size_t size = get_file_size(CONNECTION);
 
-    // Add current connections to read fd set
+    // Add current connections and listen fd to read fd set
     while((size_t)fp.tellg() < size) {
         fp.read((char*)&obj, sizeof(obj));
         if(obj.sockFD != -1)
@@ -90,10 +90,11 @@ bool add_client(Client &clientObj) {
         return true;
     }
 
-    Client readObj(1);
-    while((size_t)fp.tellg() < size && readObj.sockFD > 0) {
+    Client readObj;
+    do {
         fp.read((char*)&readObj, sizeof(readObj));
-    }
+    } while((size_t)fp.tellg() < size && readObj.sockFD > 0);
+
 
     // Found empty entry, write over this
     if(readObj.sockFD < 0) {

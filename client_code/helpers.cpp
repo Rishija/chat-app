@@ -120,11 +120,11 @@ void send_msg(int sockFD) {
             state = WAITING_FOR_LOGOUT_RESPONSE;
         }
 
-        else if(input1.substr(0, 6) == "\\login" && state == LOGGED_OUT) {
+        else if(input1.substr(0, 7) == "\\login " && state == LOGGED_OUT) {
             state = WAITING_FOR_LOGIN_RESPONSE;
         }
 
-        else if(input1.substr(0, 7) == "\\signup" && state == LOGGED_OUT) {
+        else if(input1.substr(0, 8) == "\\signup " && state == LOGGED_OUT) {
             state = WAITING_FOR_SIGNUP_RESPONSE;
         }
     }

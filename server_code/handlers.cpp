@@ -51,12 +51,12 @@ void handle_incoming_msg(Client &clientObj, string msg) {
     // If client is logged out only valid action is login and signup
     if(clientObj.state == LOGGED_OUT) {
 
-        if(msg.substr(0,6) == "\\login") {
+        if(msg.substr(0,7) == "\\login ") {
             // cout <<"Calling handle_login().. \n";
             handle_login(clientObj, msg);
         }
 
-        else if(msg.substr(0,7) == "\\signup") {
+        else if(msg.substr(0,8) == "\\signup ") {
             // cout <<"Calling handle_signup().. \n";
             handle_signup(clientObj, msg);
         }
@@ -109,7 +109,7 @@ void handle_request_from_client(int sockFD, fd_set &readSet) {
             else if(recvStatus <= 0 || !strcmp(msg, "\\quit")) {
                 close(obj.sockFD);
                 // Send leaving to client's chatroom
-                forward_msg(obj, "I'm leaving!");
+                forward_msg(obj, "LEFT", true);
                 // Remove from connection file
                 remove_client(obj.sockFD);
                 // Decrease count of chatroom client was member of

@@ -82,6 +82,6 @@ void decrease_room_count(string chatroom);
 void send_msg_by_name(int sockFD, string name, string msg);
 
 // Forward to all
-void forward_msg(Client &clientObj, string msg);
+void forward_msg(Client &clientObj, string msg, bool isInfo = false);
 
 #endif /* Server_h */

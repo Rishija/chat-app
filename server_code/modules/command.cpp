@@ -32,7 +32,7 @@ void handle_other_commands(Client &clientObj, string msg) {
 
     if(tokens[0] == "\\join" && tokens.size() == 2 && tokens[1].size() <= CREDENTIAL) {
         // Send leaving to client's chatroom
-        forward_msg(clientObj, "I'm leaving!");
+        forward_msg(clientObj, "LEFT", true);
         // Decrease count of chatroom client was member of
         decrease_room_count(clientObj.chatroom);
 
@@ -43,7 +43,7 @@ void handle_other_commands(Client &clientObj, string msg) {
         // Update chatroom for client
     	update_client_entry(clientObj);
         // Send arrival of client to other members of chatroom
-    	forward_msg(clientObj, "Hi there! I just joined");
+    	forward_msg(clientObj, "JOINED", true);
     	return;
     }
 

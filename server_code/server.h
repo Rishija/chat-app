@@ -6,6 +6,8 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <signal.h>
+#include <unistd.h>
 #define CONNECTION "database/connection.bin"
 #define CREDENTIAL 19
 #define DATA "database/users.bin"

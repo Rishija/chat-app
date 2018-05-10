@@ -4,7 +4,7 @@ char helpMsg[MAX];
 
 int main(int argc, const char * argv[]) {
 
-    int sockFD, maxfd, recentConn;
+    int sockFD, maxfd, recentConn, selectStatus;
     struct sockaddr_in servAddr;
 
     start_server(sockFD, servAddr, argc, argv);
@@ -16,13 +16,26 @@ int main(int argc, const char * argv[]) {
 
     create_help_msg();
 
+    signal(SIGCHLD, [] (int signo) {
+        int status, pid;
+        pid = waitpid(-1, &status, 0);
+        if(status != 0)
+            cout << "Process " << pid << " terminated with exit status " << status << endl;
+    });
+
     while(1) {
 
         prepare_readFd(readSet, sockFD, recentConn);
         getMaxFd(maxfd, recentConn);
 
-        if(select(maxfd + 1, &readSet, NULL, NULL, NULL) < 0)
-            print_error("Select Error");
+        selectStatus = select(maxfd + 1, &readSet, NULL, NULL, NULL);
+
+        if(selectStatus < 0) {
+            if(errno != EINTR)
+                print_error("Select Error");
+            else
+                continue;
+        }
 
         if(FD_ISSET(sockFD, &readSet)) 
             new_connection(sockFD, recentConn);
